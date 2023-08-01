@@ -3,7 +3,7 @@ import string
 
 
 def replace_directors(directors):
-    nameBasics = pd.read_csv('movie-data/name.basics.csv.gz', index_col=0, compression='gzip')
+    nameBasics = pd.read_csv('name.basics.csv.gz', index_col=0, compression='gzip')
     nameBasics = nameBasics.drop(['birthYear', 'deathYear', 'primaryProfession', 'knownForTitles'], axis=1)
     nameDict = nameBasics.to_dict()
     for each in directors:
@@ -12,7 +12,7 @@ def replace_directors(directors):
 
 def collect():
     # Read basic data & only have movie data
-    titleBasics = pd.read_csv('movie-data/title.basics.csv.gz', index_col=0, low_memory=False, compression='gzip')
+    titleBasics = pd.read_csv('title.basics.csv.gz', index_col=0, low_memory=False, compression='gzip')
     titleBasics = titleBasics[titleBasics['titleType'] == 'movie']
 
     # Remove movies with unknown release year, runtime, and genre
@@ -31,12 +31,12 @@ def collect():
     titleBasics = titleBasics.drop(['titleType', 'originalTitle', 'isAdult', 'endYear'], axis=1)
 
     # Import and join ratings data
-    titleRatings = pd.read_csv('movie-data/title.ratings.csv.gz', index_col=0, compression='gzip')
+    titleRatings = pd.read_csv('title.ratings.csv.gz', index_col=0, compression='gzip')
     titleRatings = titleRatings[titleRatings['numVotes'] > 49]
     movies = titleBasics.join(titleRatings)
 
     # Import and join director data
-    titleCrew = pd.read_csv('movie-data/title.crew.csv.gz', index_col=0, compression='gzip')
+    titleCrew = pd.read_csv('title.crew.csv.gz', index_col=0, compression='gzip')
     titleCrew = titleCrew.drop(['writers'], axis=1)
     movies = movies.join(titleCrew)
     movies = movies[movies['directors'] != '\\N']
