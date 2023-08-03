@@ -1,5 +1,7 @@
+import pandas
 import pandas as pd
 import string
+from statsmodels.nonparametric.smoothers_lowess import lowess
 
 
 def replace_directors(directors):
@@ -48,18 +50,11 @@ def collect():
     movies['genres'] = movies['genres'].str.split(',')
     movies['directors'] = movies['directors'].str.split(',')
 
-    # Add director names
-    # movies['directorsName'] = movies['directors']
-    # movies['directorsName'].apply(replace_directors)
-
-    # Split into 4 even subsets
-    # mdf = []
-    # df1 = movies.sample(frac=0.5, random_state=1)
-    # df2 = movies.drop(df1.index)
-    # mdf.append(df1.sample(frac=0.5, random_state=1))
-    # mdf.append(df1.drop(mdf[0].index))
-    # mdf.append(df2.sample(frac=0.5, random_state=1))
-    # mdf.append(df2.drop(mdf[2].index))
+    # Loess filtered additional set
+    measurements = movies['averageRating'].values.tolist()
+    input_range = movies['startYear'].values.tolist()
+    filtered = lowess(measurements, input_range, frac=0.1)
+    filter_df = pandas.DataFrame(filtered).set_index(0)
 
     # Split into 90/10 subsets
     movies90 = movies.sample(frac=0.9, random_state=1)
@@ -67,4 +62,5 @@ def collect():
 
     movies90.to_csv('movies90.csv.gz', compression='gzip')
     movies10.to_csv('movies10.csv.gz', compression='gzip')
-    return movies90, movies10
+    filter_df.to_csv('loess_year_by_rating.csv.gz', compression='gzip', header=None)
+    return movies90, movies10, filter_df
