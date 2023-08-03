@@ -1,57 +1,14 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import os
 import pandas
+import statsmodels.api as sm
 
-
-from convert_to_csv import convert
-from collect_data import collect
-
-from scipy import stats
+from scipy.stats import normaltest
 from scipy.stats import mannwhitneyu
 from scipy.stats import chi2_contingency
-
-def chi_squared_test(movies):
-    # create a contingency table
-    contingency_table = pd.crosstab(movies['genres'], movies['directors'])
-
-    # perform the chi-squared test
-    chi2, p_value, dof, expected = chi2_contingency(contingency_table)
-
-    # check if the differences between groups are statistically significant
-    if p_value < 0.05:
-        print('There is a significant association between genres and directors.')
-    else:
-        print('There is no significant association between genres and directors.')
-        
-        
-def u_test(movies):
-  
-    
-    column='averageRating'
-    alpha=0.05
-    # create a new DataFrame that only includes rows where the genres column contains a single value
-    single_genre_movies = movies[movies['genres'].apply(lambda x: len(x) == 1)]
-
-    # get the unique genres
-    genres = single_genre_movies['genres'].unique()
-
-    # compare each genre with all other genres
-    for i, genre1 in enumerate(genres):
-        for genre2 in genres[i+1:]:
-            # define the groups to compare
-            group1 = single_genre_movies[single_genre_movies['genres'] == genre1][column]
-            group2 = single_genre_movies[single_genre_movies['genres'] == genre2][column]
-
-            # perform the Mann-Whitney U test
-            u, p_value = mannwhitneyu(group1, group2)
-
-            # check if the differences between groups are statistically significant
-            if p_value < alpha:
-                print(f'{genre1} vs {genre2}: The {column} values are significantly different.')
-            else:
-                print(f'{genre1} vs {genre2}: The {column} values are not significantly different.')
+from statsmodels.stats.multicomp import pairwise_tukeyhsd
+from scipy import stats
 
 def test_normality(movies):
     # define the columns to test
@@ -67,9 +24,10 @@ def test_normality(movies):
     # apply the square root transformation
     for column in columns:
         movies_transformed[column] = np.log(movies_transformed[column])
-
-   
-
+        plt.hist(movies_transformed[column],bins = 30)
+        plt.title(f'Histogram of {column}')
+        plt.show()
+        
 def anova(movies):
     # split the data into groups based on genre
     groups = []
@@ -82,12 +40,81 @@ def anova(movies):
 
     # check if the differences between groups are statistically significant
     if p_value < 0.05:
-        print('Some genres tend to have higher or lower average ratings than others.')
+        print('Some genres tend to have higher or lower average ratings than others. Proceed to Post Hoc Analysis')
     else:
-        print('The average rating of movies does not appear to depend on their genre.')
+        print('The average rating of movies does not appear to depend on their genre.')        
+        
+def tukey_hsd(movies):
+    # define the data and groups
+    data = movies['averageRating']
+    groups = movies['genres']
+
+    # perform Tukey's HSD test
+    result = pairwise_tukeyhsd(data, groups)
+    print(result)
+
+def regression_rating_year(movies):
+    # define the response and predictor variables
+    y = movies['averageRating']
+    x = movies['startYear']
+
+    # create a DataFrame containing the data
+    data = pd.DataFrame({'y': y, 'x': x, 'one': 1})
+
+    # fit the model
+    results = sm.OLS(data['y'], data[['x', 'one']]).fit()
+
+    # print the results
+    print(results.summary())
+
+def regression_rating_runtime(movies):
+    # define the response and predictor variables
+    y = movies['averageRating']
+    x = movies['runtimeMinutes']
+
+    # create a DataFrame containing the data
+    data = pd.DataFrame({'y': y, 'x': x, 'one': 1})
+
+    # fit the model
+    results = sm.OLS(data['y'], data[['x', 'one']]).fit()
+
+    # print the results
+    print(results.summary())    
+
+def chi_square_test(movies):
+    # create a contingency table
+    contingency_table = pd.crosstab(movies['directors'], movies['genres'])
+
+    # perform the Chi-Square test
+    chi2, p_value, dof, expected = chi2_contingency(contingency_table)
+
+    # interpret the results
+    alpha = 0.05
+    if p_value < alpha:
+        print('There is a significant association between the director and genre of a movie.')
+    else:
+        print('There is no significant association between the director and genre of a movie.')
         
         
-        
+def u_test(movies):
+    # define the groups to compare
+    group1 = movies[movies['genres'] == 'Adventure']['averageRating']
+    group2 = movies[movies['genres'] == 'Action']['averageRating']
+
+    # perform the Mann-Whitney U test
+    u, p_value = mannwhitneyu(group1, group2)
+
+    # print the results
+    print(p_value)
+
+    # interpret the results
+    alpha = 0.05
+    if p_value < alpha:
+        print('The average rating of Adventure movies is more diverse than Action Movie')
+    else:
+        print('The average rating of Adventure movies is not diverse as Action movie')
+
+   
 
 def linear_regression(movies):
     # extract the data
@@ -96,6 +123,8 @@ def linear_regression(movies):
 
     # perform linear regression
     slope, intercept, r_value, p_value, std_err = stats.linregress(x, y)
+    
+    print(p_value)
 
     if p_value < 0.05:
         print('the average rating appear to consistently increase or decrease as the year of release changes.')
