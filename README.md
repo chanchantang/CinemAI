@@ -14,11 +14,11 @@ Else, to download the converted CSV data, [use this link](https://drive.google.c
 (either raw-tsv-data/ or raw-csv-data/)
 
 ## Data Analysis
-1. Run data_collection.py to clean and collect the data<br>
+1. Run collect_data.py to clean and collect the data<br>
 >The data produced by this already exists for convenience & will not reproduce the files again unless it is missing. However, you can force it to reproduce the files through providing an additional argument:
 
 ```
-python data_collection.py produce
+python collect_data.py produce
 ```
 2. Run the imdb.ipynb notebook to gain access to the general analysis of IMDb's data
 3. Run the imdb_stats_tests.py to see the detailed statistical analysis of IMDb's data.
