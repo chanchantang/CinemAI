@@ -1,5 +1,4 @@
 import sys
-import pandas
 import pandas as pd
 import os
 from statsmodels.nonparametric.smoothers_lowess import lowess
@@ -8,6 +7,8 @@ from statsmodels.nonparametric.smoothers_lowess import lowess
 def convert():
     did_convert = False
     file_names = ['title.basics', 'title.ratings', 'title.crew']
+
+    #  Check if CSV file exists; if not, produce
     for name in file_names:
         if not os.path.isfile('raw-csv-data/' + name + '.csv.gz'):
             if not did_convert:
@@ -66,7 +67,7 @@ def collect():
     measurements = movies['averageRating'].values.tolist()
     input_range = movies['startYear'].values.tolist()
     filtered = lowess(measurements, input_range, frac=0.1)
-    filter_df = pandas.DataFrame(filtered).set_index(0)
+    filter_df = pd.DataFrame(filtered).set_index(0)
 
     # Split into 90/10 subsets
     movies90 = movies.sample(frac=0.9, random_state=1)
@@ -79,6 +80,7 @@ def collect():
 
 
 def main():
+    # Detect if additional argument is given
     if len(sys.argv) > 1:
         produce = sys.argv[1]
     else:
@@ -87,6 +89,8 @@ def main():
     print('<Checking if tsv files need to be converted>')
     convert()
 
+    # If additional argument is given, produce data again
+    # Else, only produce if data is missing
     if produce == 'produce':
         print('<forcing production of filtered 90/10 and loess yearByrating data>')
         collect()
