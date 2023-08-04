@@ -1,7 +1,7 @@
 import pandas as pd
 import pandas
 
-from stats_method import (
+from imdb_stats_method import (
     chi_square_test, u_test, test_normality, anova, linear_regression , tukey_hsd,regression_rating_runtime,regression_rating_year)
 
 
@@ -20,14 +20,13 @@ def main():
     directors_explode_df = genres_explode_df.explode('directors')
     
     "Performing Normality test to see which data is normally distributed"
-    #test_normality(genres_explode_df)
-    
+    test_normality(genres_explode_df)
     
     "Found that only averageRating score is normally distributed, proceed with Anova "
-    #anova(genres_explode_df)
+    anova(genres_explode_df)
     
-    "Anova found significant in average Rating, proceed with Tukey's HSD to compare "
-    #tukey_hsd(genres_explode_df)
+    "Anova found significant in average Rating, proceed with Tukey's HSD to compare each pair"
+    tukey_hsd(genres_explode_df)
 
     """   
     "Performing regression between averageRating and Startyear
@@ -35,11 +34,15 @@ def main():
     and whether the year of release can predict the average rating of a movie.
     """
     
-    #regression_rating_runtime(genres_explode_df)
-    #regression_rating_year(genres_explode_df)
+    regression_rating_runtime(genres_explode_df)
+    regression_rating_year(genres_explode_df)
     
-    #u_test(genres_explode_df)
-    #chi_square_test(directors_explode_df)
+    """
+    Perfomring U test and Chi square test on data that is not 
+    """
+    
+    u_test(genres_explode_df)
+    chi_square_test(directors_explode_df)
     
     linear_regression(genres_explode_df)
     
