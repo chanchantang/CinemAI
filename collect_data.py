@@ -1,7 +1,6 @@
 import sys
 import pandas as pd
 import os
-from statsmodels.nonparametric.smoothers_lowess import lowess
 
 
 def convert():
@@ -63,19 +62,12 @@ def collect():
     movies['genres'] = movies['genres'].str.split(',')
     movies['directors'] = movies['directors'].str.split(',')
 
-    # Loess filtered additional set
-    measurements = movies['averageRating'].values.tolist()
-    input_range = movies['startYear'].values.tolist()
-    filtered = lowess(measurements, input_range, frac=0.1)
-    filter_df = pd.DataFrame(filtered).set_index(0)
-
     # Split into 90/10 subsets
     movies90 = movies.sample(frac=0.9, random_state=1)
     movies10 = movies.drop(movies90.index)
 
     movies90.to_csv('movies90.csv')
     movies10.to_csv('movies10.csv')
-    filter_df.to_csv('loess_year_by_rating.csv', header=None)
     return
 
 
@@ -92,13 +84,12 @@ def main():
     # If additional argument is given, produce data again
     # Else, only produce if data is missing
     if produce == 'produce':
-        print('<forcing production of filtered 90/10 and loess yearByrating data>')
+        print('<forcing production of filtered 90/10 subsets>')
         collect()
     else:
         print('<Checking if filtered & 90/10 split data exists>')
-        if not os.path.isfile('movies90.csv') or not os.path.isfile('movies10.csv') or not os.path.isfile(
-                'loess_year_by_rating.csv'):
-            print(' <collecting data into two 90/10 subsets & producing loess yearBYrating data>')
+        if not os.path.isfile('movies90.csv') or not os.path.isfile('movies10.csv'):
+            print(' <collecting data into 90/10 subsets>')
             collect()
         else:
             print(' <data found>')
