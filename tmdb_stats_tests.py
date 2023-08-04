@@ -1,7 +1,7 @@
 """
 This python class purpose is to make statistcal test on the tmdb ( kaggles) movie dataframe
 It has much less movies to compare but still alot (around 5k movies)
-We will proceed to see if there's any significant relationship between the genre and the budget,
+We will proceed to see if there's any significant relationship between the genre and the budget
 """
 
 import pandas as pd
@@ -9,6 +9,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy import stats
 
+
+"Do transformation so that budget data is normally distributed for further tests"
 def check_normality(data):
     # extract the budget data
     budget = data['budget']
@@ -31,7 +33,7 @@ def check_normality(data):
     plt.title('Histogram of Transformed Budget Data')
     plt.show()
 
-
+"make a dictionary to get the correct genre based on the id"
 def create_genre_dict(tmdb5000):
     # create an empty dictionary to store the mapping of genre IDs to names
     genre_dict = {}
@@ -52,6 +54,7 @@ def create_genre_dict(tmdb5000):
     
     return genre_dict
 
+"function to apply the id to genre conversion on the dataframe "
 def convert_genres(tmdb, genre_dict):
     # create a copy of the tmdb DataFrame
     tmdb_genres = tmdb.copy()
@@ -67,6 +70,7 @@ def convert_genres(tmdb, genre_dict):
     
     return tmdb_genres
 
+"function to drop unrelated column on the dataframe"
 def drop_columns(tmdb_genres, columns_to_drop):
     # drop the columns from the tmdb_genres DataFrame
     tmdb_genres = tmdb_genres.drop(columns=columns_to_drop)
@@ -74,6 +78,7 @@ def drop_columns(tmdb_genres, columns_to_drop):
     
     return tmdb_genres
 
+"Perform ANOVA to check if the genre and budget have any significant"
 def anova_test(data):
     # create a list to store the budget data for each genre
     budget_data = []
@@ -126,13 +131,13 @@ def main():
     # drop unnecessary columns from the DataFrame
     tmdb_genres = drop_columns(tmdb_genres, columns_to_drop)
     
+    "Since one movie has multiple genres tag, use explode to separate them"
     genres_explode_df = tmdb_genres.explode('genres')
     
     check_normality(genres_explode_df)
+    
     anova_test(genres_explode_df)
-    
-  
-    
+        
 
 if __name__ == '__main__':
     main()

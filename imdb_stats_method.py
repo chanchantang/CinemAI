@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import pandas
 import statsmodels.api as sm
 
-from scipy.stats import normaltest
+
 from scipy.stats import mannwhitneyu
 from scipy.stats import chi2_contingency
 from statsmodels.stats.multicomp import pairwise_tukeyhsd
@@ -14,14 +14,11 @@ def test_normality(movies):
     # define the columns to test
     columns = ['startYear', 'runtimeMinutes', 'averageRating', 'numVotes']
 
-    # set the significance level
-    alpha = 0.05
-
     # create a copy of the DataFrame
     movies_transformed = movies.copy()
 
 
-    # apply the square root transformation
+    # apply square root transformation in attempt to form a normal distribution
     for column in columns:
         movies_transformed[column] = np.log(movies_transformed[column])
         plt.hist(movies_transformed[column],bins = 30)
@@ -39,6 +36,7 @@ def anova(movies):
     f_value, p_value = stats.f_oneway(*groups)
 
     # check if the differences between groups are statistically significant
+    print("ANOVA p_value :",p_value)
     if p_value < 0.05:
         print('Some genres tend to have higher or lower average ratings than others. Proceed to Post Hoc Analysis')
     else:
@@ -49,7 +47,6 @@ def tukey_hsd(movies):
     data = movies['averageRating']
     groups = movies['genres']
 
-    # perform Tukey's HSD test
     result = pairwise_tukeyhsd(data, groups)
     print(result)
 
@@ -88,12 +85,12 @@ def chi_square_test(movies):
     # perform the Chi-Square test
     chi2, p_value, dof, expected = chi2_contingency(contingency_table)
 
-    # interpret the results
     alpha = 0.05
+    print("Chi Square test p_value :",p_value)
     if p_value < alpha:
-        print('There is a significant association between the director and genre of a movie.')
+        print('Certain directors may be more likely to work on movies of certain genres.')
     else:
-        print('There is no significant association between the director and genre of a movie.')
+        print('Certain directors are not likely to work on movies of certain genres.')
         
         
 def u_test(movies):
@@ -104,10 +101,8 @@ def u_test(movies):
     # perform the Mann-Whitney U test
     u, p_value = mannwhitneyu(group1, group2)
 
-    # print the results
-    print(p_value)
+    print("U test p_value :",p_value)
 
-    # interpret the results
     alpha = 0.05
     if p_value < alpha:
         print('The average rating of Adventure movies is more diverse than Action Movie')
@@ -118,15 +113,17 @@ def u_test(movies):
 
 def linear_regression(movies):
     # extract the data
+    "Linear regression does not require the independent variable startYear to be normally distributed"
+
     x = movies['startYear']
     y = movies['averageRating']
 
     # perform linear regression
     slope, intercept, r_value, p_value, std_err = stats.linregress(x, y)
     
-    print(p_value)
+    print("Linear regression p_value :" , p_value)
 
     if p_value < 0.05:
-        print('the average rating appear to consistently increase or decrease as the year of release changes.')
+        print('movies released in later years tend to have higher average ratings than movies released in earlier years')
     else:
-        print('the average rating does not appear to consistently increase or decrease as the year of release changes')
+        print('movies released in later years does not tend to have higher average ratings than movies released in earlier years')

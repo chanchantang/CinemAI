@@ -38,17 +38,15 @@ def main():
     regression_rating_year(genres_explode_df)
     
     """
-    Perfomring U test and Chi square test on data that is not 
+    Perfomring non parametric U test and Chi square test on data that is not proven to be normally distributed
     """
-    
     u_test(genres_explode_df)
     chi_square_test(directors_explode_df)
     
+    "Perform linear regression on year of release and the average rating to see their relationship"
     linear_regression(genres_explode_df)
     
-    
 
-    
 
 
 if __name__ == '__main__':
