@@ -1,3 +1,4 @@
+import sys
 import pandas
 import pandas as pd
 import os
@@ -6,7 +7,7 @@ from statsmodels.nonparametric.smoothers_lowess import lowess
 
 def convert():
     did_convert = False
-    file_names = ['title.basics', 'title.ratings', 'title.crew', 'name.basics']
+    file_names = ['title.basics', 'title.ratings', 'title.crew']
     for name in file_names:
         if not os.path.isfile('raw-csv-data/' + name + '.csv.gz'):
             if not did_convert:
@@ -21,14 +22,6 @@ def convert():
     if not did_convert:
         print(' <all data found>')
     return
-
-
-def replace_directors(directors):
-    nameBasics = pd.read_csv('name.basics.csv.gz', index_col=0, compression='gzip')
-    nameBasics = nameBasics.drop(['birthYear', 'deathYear', 'primaryProfession', 'knownForTitles'], axis=1)
-    nameDict = nameBasics.to_dict()
-    for each in directors:
-        each = nameDict[each]
 
 
 def collect():
@@ -84,16 +77,28 @@ def collect():
     filter_df.to_csv('loess_year_by_rating.csv', header=None)
     return
 
+
 def main():
+    if len(sys.argv) > 1:
+        produce = sys.argv[1]
+    else:
+        produce = 'NA'
+
     print('<Checking if tsv files need to be converted>')
     convert()
 
-    print('<Checking if filtered & 90/10 split data exists>')
-    if not os.path.isfile('movies90.csv') or not os.path.isfile('movies10.csv') or not os.path.isfile('loess_year_by_rating.csv'):
+    if produce == 'produce':
+        print('<forcing production of filtered 90/10 and loess yearByrating data>')
+        collect()
+    else:
+        print('<Checking if filtered & 90/10 split data exists>')
+        if not os.path.isfile('movies90.csv') or not os.path.isfile('movies10.csv') or not os.path.isfile(
+                'loess_year_by_rating.csv'):
             print(' <collecting data into two 90/10 subsets & producing loess yearBYrating data>')
             collect()
-    else:
-        print(' <data found>')
+        else:
+            print(' <data found>')
+
 
 if __name__ == '__main__':
     main()
